@@ -4,14 +4,16 @@
 (Гималаи, Каракорум, Кавказ, Альпы, Анды…) с **текущей погодой прямо на высоте вершины**.
 Можно искать вершину, выбирать горную систему и обновлять данные.
 
-- **Сайт:** https://GITHUB_USER.github.io/REPO_NAME/
+- **Сайт:** https://redukeee-hse.github.io/mountain-weather/
+- **Репозиторий:** https://github.com/redukeee-hse/mountain-weather
 - **API:** [Open-Meteo Forecast API](https://open-meteo.com/en/docs) (HTTPS, CORS, без ключа).
   Одним запросом приходит погода для всех выбранных вершин; параметр `elevation`
   пересчитывает температуру на высоту вершины.
 
 ## Участники
 
-- ИМЯ ФАМИЛИЯ — [@GITHUB_USER](https://github.com/GITHUB_USER)
+- Артемьев Денис — [@redukeee-hse](https://github.com/redukeee-hse)
+- Степанов Артем — [@ArtemST2006](https://github.com/ArtemST2006)
 
 ## Возможности
 
