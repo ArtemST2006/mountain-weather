@@ -1,6 +1,3 @@
-import './style.css'
-import './ui.css'
-import './details.css'
 import { ApiError, fetchMountains, getCategories } from './api.js'
 import { setupControls } from './controls.js'
 import { setupDetails } from './details.js'
