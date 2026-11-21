@@ -1,0 +1,77 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 56px 16px 120px;
+  color: #f4f7ff;
+  background:
+    radial-gradient(1200px 400px at 75% -10%, rgb(255 214 170 / 35%), transparent 60%),
+    linear-gradient(180deg, #1d2b53 0%, #3a4f8a 55%, #7d8fc4 100%);
+}
+
+.mountains {
+  position: absolute;
+  inset: auto 0 0;
+  width: 100%;
+  height: 180px;
+}
+
+.far {
+  fill: #5a6aa3;
+  opacity: 0.55;
+}
+
+.mid {
+  fill: #2c3a68;
+}
+
+.snow {
+  fill: #eef3ff;
+}
+
+.near {
+  fill: var(--color-bg);
+}
+
+.content {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  max-width: 560px;
+  margin: 12px 0 0;
+  font-size: 1.05rem;
+  opacity: 0.9;
+}
+
+.subtitle a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .hero {
+    padding: 40px 16px 104px;
+  }
+
+  .mountains {
+    height: 120px;
+  }
+}

@@ -9,8 +9,9 @@
  *                 (видно состояние ошибки и кнопку «Повторить»).
  */
 
-import { MOUNTAINS, RANGES, getRangeName } from './mountains.js'
-import { describeWeather } from './weather.js'
+import { MOUNTAINS, RANGES, getRangeName } from '../data/mountains.ts'
+import type { Category, Mountain, MountainFilters, MountainWithWeather, SummitWeather } from '../types.ts'
+import { describeWeather } from '../utils/weatherCodes.ts'
 
 const API_URL = 'https://api.open-meteo.com/v1/forecast'
 
@@ -18,59 +19,50 @@ const pageParams = new URLSearchParams(window.location.search)
 const DEBUG_FAIL = pageParams.has('fail')
 const DEBUG_DELAY = Number(pageParams.get('delay')) || 0
 
-/**
- * @typedef {Object} Category
- * @property {string} slug  значение фильтра, например "caucasus"
- * @property {string} name  название для показа, например "Кавказ"
- */
+/** Поле `current` ответа Open-Meteo — только то, что мы запрашиваем. */
+interface OpenMeteoCurrent {
+  time: string
+  temperature_2m: number
+  apparent_temperature: number
+  wind_speed_10m: number
+  wind_gusts_10m: number
+  cloud_cover: number
+  weather_code: number
+  is_day: 0 | 1
+}
 
-/**
- * @typedef {Object} SummitWeather
- * @property {number} temperature  температура на вершине, °C
- * @property {number} feelsLike    ощущается как, °C
- * @property {number} windSpeed    ветер, км/ч
- * @property {number} windGusts    порывы ветра, км/ч
- * @property {number} cloudCover   облачность, %
- * @property {number} code         код погоды WMO
- * @property {string} text         описание погоды по-русски, например «Снег»
- * @property {string} icon         эмодзи погоды, например «🌨️»
- * @property {boolean} isDay       день ли сейчас на вершине
- * @property {string} localTime    местное время на вершине, «ЧЧ:ММ»
- */
-
-/**
- * @typedef {import('./mountains.js').Mountain & {
- *   rangeName: string,
- *   weather: SummitWeather
- * }} MountainWithWeather
- */
+interface OpenMeteoLocation {
+  current: OpenMeteoCurrent
+}
 
 /** Ошибка, текст которой можно показать пользователю. */
 export class ApiError extends Error {
-  /**
-   * @param {string} message
-   * @param {number} [status] HTTP-статус, если сервер ответил
-   */
-  constructor(message, status) {
+  readonly status?: number
+
+  constructor(message: string, status?: number) {
     super(message)
     this.name = 'ApiError'
     this.status = status
   }
 }
 
+export function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === 'AbortError'
+}
+
 /** Список горных систем для фильтра. */
-export function getCategories() {
+export function getCategories(): Category[] {
   return RANGES
 }
 
 /**
  * Находит вершины по запросу и горной системе и загружает для них погоду.
  * Результат отсортирован по высоте (от самой высокой).
- *
- * @param {{ query?: string, category?: string, signal?: AbortSignal }} [params]
- * @returns {Promise<MountainWithWeather[]>}
  */
-export async function fetchMountains({ query = '', category = '', signal } = {}) {
+export async function fetchMountains(
+  { query, category }: MountainFilters,
+  signal?: AbortSignal,
+): Promise<MountainWithWeather[]> {
   const needle = query.trim().toLowerCase()
   const mountains = MOUNTAINS.filter(
     (m) =>
@@ -83,7 +75,7 @@ export async function fetchMountains({ query = '', category = '', signal } = {})
 
   if (mountains.length === 0) return []
 
-  const data = await request(buildUrl(mountains), signal)
+  const data = await request<OpenMeteoLocation | OpenMeteoLocation[]>(buildUrl(mountains), signal)
   const locations = Array.isArray(data) ? data : [data]
 
   if (locations.length !== mountains.length) {
@@ -93,12 +85,11 @@ export async function fetchMountains({ query = '', category = '', signal } = {})
   return mountains.map((mountain, i) => ({
     ...mountain,
     rangeName: getRangeName(mountain.range),
-    weather: toSummitWeather(locations[i].current),
+    weather: toSummitWeather(locations[i]!.current),
   }))
 }
 
-/** @param {import('./mountains.js').Mountain[]} mountains */
-function buildUrl(mountains) {
+function buildUrl(mountains: Mountain[]): URL {
   const url = new URL(API_URL)
   url.searchParams.set('latitude', DEBUG_FAIL ? '999' : mountains.map((m) => m.lat).join(','))
   url.searchParams.set('longitude', mountains.map((m) => m.lon).join(','))
@@ -115,17 +106,14 @@ function buildUrl(mountains) {
 /**
  * GET-запрос с проверкой response.ok.
  * fetch не отклоняет промис при 400/500 — поэтому статус проверяем сами.
- *
- * @param {URL} url
- * @param {AbortSignal} [signal]
  */
-async function request(url, signal) {
-  let response
+async function request<T>(url: URL, signal?: AbortSignal): Promise<T> {
+  let response: Response
   try {
     if (DEBUG_DELAY) await sleep(DEBUG_DELAY, signal)
     response = await fetch(url, { signal })
   } catch (error) {
-    if (error.name === 'AbortError') throw error
+    if (isAbortError(error)) throw error
     throw new ApiError('Не удалось связаться с сервером погоды. Проверьте подключение к интернету.')
   }
 
@@ -135,15 +123,14 @@ async function request(url, signal) {
   }
 
   try {
-    return await response.json()
+    return (await response.json()) as T
   } catch (error) {
-    if (error.name === 'AbortError') throw error
+    if (isAbortError(error)) throw error
     throw new ApiError('Сервер погоды прислал некорректные данные.')
   }
 }
 
-/** @returns {SummitWeather} */
-function toSummitWeather(current) {
+function toSummitWeather(current: OpenMeteoCurrent): SummitWeather {
   const isDay = current.is_day === 1
   return {
     temperature: Math.round(current.temperature_2m),
@@ -159,7 +146,7 @@ function toSummitWeather(current) {
 }
 
 /** Пауза, которую можно прервать через AbortSignal. */
-function sleep(ms, signal) {
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(resolve, ms)
     signal?.addEventListener(
