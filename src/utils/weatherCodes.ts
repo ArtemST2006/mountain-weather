@@ -3,8 +3,8 @@
  * https://open-meteo.com/en/docs (раздел «WMO Weather interpretation codes»)
  */
 
-/** @type {Record<number, [string, string]>} код → [описание, значок] */
-const CODES = {
+/** код → [описание, значок] */
+const CODES: Record<number, [text: string, icon: string]> = {
   0: ['Ясно', '☀️'],
   1: ['Преимущественно ясно', '🌤️'],
   2: ['Переменная облачность', '⛅'],
@@ -35,13 +35,31 @@ const CODES = {
   99: ['Сильная гроза с градом', '⛈️'],
 }
 
-/**
- * @param {number} code код WMO
- * @param {boolean} isDay днём ли сейчас на вершине
- * @returns {{ text: string, icon: string }}
- */
-export function describeWeather(code, isDay) {
+export function describeWeather(code: number, isDay: boolean): { text: string; icon: string } {
   const [text, icon] = CODES[code] ?? ['Нет данных', '❔']
   if (!isDay && (code === 0 || code === 1)) return { text, icon: '🌙' }
   return { text, icon }
+}
+
+export type SkyType = 'clear' | 'cloudy' | 'fog' | 'snow' | 'rain' | 'storm'
+
+/** Тип неба по коду погоды WMO — определяет цвет верхней части карточки. */
+export function skyType(code: number): SkyType {
+  if (code <= 1) return 'clear'
+  if (code <= 3) return 'cloudy'
+  if (code <= 48) return 'fog'
+  if (code >= 95) return 'storm'
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return 'snow'
+  return 'rain'
+}
+
+export type TempTone = 'extreme' | 'frost' | 'cold' | 'mild' | 'warm'
+
+/** Оттенок температуры: от лютого мороза до тепла. */
+export function tempTone(t: number): TempTone {
+  if (t <= -30) return 'extreme'
+  if (t <= -15) return 'frost'
+  if (t < 0) return 'cold'
+  if (t < 15) return 'mild'
+  return 'warm'
 }
