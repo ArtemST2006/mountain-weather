@@ -1,6 +1,6 @@
-# Погода на вершинах — ДЗ №2 (Vite + API)
+# Погода на вершинах — ДЗ №3 (React + TypeScript + CSS Modules)
 
-Одностраничное приложение на **Vite (Vanilla + JavaScript)**: каталог высочайших гор мира
+Одностраничное приложение на **Vite 8, React 19, TypeScript и CSS Modules**: каталог высочайших гор мира
 (Гималаи, Каракорум, Кавказ, Альпы, Анды…) с **текущей погодой прямо на высоте вершины**.
 Можно искать вершину, выбирать горную систему и обновлять данные.
 
@@ -32,6 +32,7 @@
 npm install       # установить зависимости
 npm run dev       # сервер разработки: http://localhost:5173
 npm run build     # production-сборка в папку dist/
+npm run typecheck # проверка типов TypeScript
 npm run preview   # локальный просмотр готовой сборки
 ```
 
@@ -46,18 +47,26 @@ npm run preview   # локальный просмотр готовой сбор�
 ## Структура
 
 ```
-index.html          разметка страницы: #controls, #status, #results
-vite.config.js      base: './' — относительные пути для GitHub Pages
-src/main.js         точка входа: состояние, загрузка данных, связывание модулей
-src/mountains.js    справочник вершин и горных систем (координаты, высоты)
-src/api.js          запрос к Open-Meteo, обработка ошибок HTTP и сети
-src/weather.js      расшифровка кодов погоды WMO
-src/status.js       состояния загрузки / пусто / ошибка
-src/controls.js     поиск, горные системы, кнопка «Обновить»
-src/render.js       карточки вершин
-src/style.css       переменные темы, раскладка, кнопки, состояния
-src/ui.css          стили элементов управления и карточек
-.github/workflows/deploy.yml   сборка и публикация на GitHub Pages при push в main
+index.html                         корневой элемент приложения
+vite.config.ts                     base: './' для GitHub Pages
+src/main.tsx                       точка входа React
+src/types.ts                       типы вершин, погоды, фильтров и состояний
+src/api/weather.ts                 запрос к Open-Meteo и обработка ошибок
+src/data/mountains.ts              справочник вершин и горных систем
+src/hooks/useMountains.ts          загрузка данных и отмена старых запросов
+src/utils/format.ts                форматирование чисел и температуры
+src/utils/weatherCodes.ts          описание погоды, тип неба и тон температуры
+src/utils/ridge.ts                 контуры силуэта горы
+src/styles/global.css              переменные темы и сброс
+src/components/App/               состояние фильтров и раскладка
+src/components/Hero/              шапка страницы
+src/components/Controls/          поиск, фильтр и кнопки
+src/components/Button/            общая кнопка
+src/components/MountainList/      итог и сетка вершин
+src/components/MountainCard/      карточка вершины и погодные показатели
+src/components/StatusMessage/     загрузка, пустой результат и ошибка
+src/components/Footer/            подвал
+.github/workflows/deploy.yml      сборка и публикация при push в main
 ```
 
 ## Деплой
