@@ -1,0 +1,17 @@
+.form { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) auto; gap: 12px; align-items: end; }
+.field { display: grid; gap: 6px; min-width: 0; }
+.fieldLabel { font-size: 0.8rem; font-weight: 600; color: var(--color-muted); }
+.fieldControl { position: relative; display: block; }
+.fieldIcon { position: absolute; top: 50%; left: 12px; width: 18px; height: 18px; fill: none; stroke: var(--color-muted); stroke-width: 2; stroke-linecap: round; transform: translateY(-50%); pointer-events: none; }
+.input { width: 100%; min-height: 44px; padding: 0 12px; font: inherit; color: var(--color-text); background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius); }
+.search .input { padding-left: 38px; }
+.input:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; border-color: var(--color-accent); }
+.select { appearance: none; padding-right: 36px; cursor: pointer; background-image: linear-gradient(45deg, transparent 50%, var(--color-muted) 50%), linear-gradient(135deg, var(--color-muted) 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
+.actions { display: flex; gap: 8px; }
+.actionButton { min-height: 44px; }
+.buttonIcon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.busy { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 960px) { .form { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .actions { grid-column: 1 / -1; } .actionButton { flex: 1; } }
+@media (max-width: 600px) { .form { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .busy { animation: none; } }

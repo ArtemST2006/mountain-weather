@@ -1,20 +1,11 @@
+import type { Category, Mountain } from '../types.ts'
+
 /**
  * Справочник вершин и горных систем.
- * Координаты и высоты — по Википедии. Погоду для каждой вершины загружает src/api.js.
- *
- * @typedef {Object} Mountain
- * @property {string} id         уникальный идентификатор
- * @property {string} name       название по-русски
- * @property {string} range      slug горной системы (см. RANGES)
- * @property {string} country    страна (или страны)
- * @property {number} elevation  высота вершины, м
- * @property {number} lat        широта
- * @property {number} lon        долгота
- * @property {string} wiki       заголовок статьи английской Википедии (для фото и ссылки)
+ * Координаты и высоты — по Википедии. Погоду для каждой вершины загружает src/api/weather.ts.
  */
 
-/** @type {import('./api.js').Category[]} */
-export const RANGES = [
+export const RANGES: Category[] = [
   { slug: 'himalaya', name: 'Гималаи' },
   { slug: 'karakoram', name: 'Каракорум' },
   { slug: 'pamir-tianshan', name: 'Памир и Тянь-Шань' },
@@ -27,8 +18,7 @@ export const RANGES = [
   { slug: 'other', name: 'Другие вершины мира' },
 ]
 
-/** @type {Mountain[]} */
-export const MOUNTAINS = [
+export const MOUNTAINS: Mountain[] = [
   // Гималаи
   { id: 'everest', name: 'Эверест (Джомолунгма)', range: 'himalaya', country: 'Непал, Китай', elevation: 8849, lat: 27.9881, lon: 86.925, wiki: 'Mount_Everest' },
   { id: 'kangchenjunga', name: 'Канченджанга', range: 'himalaya', country: 'Непал, Индия', elevation: 8586, lat: 27.7025, lon: 88.1475, wiki: 'Kangchenjunga' },
@@ -92,7 +82,6 @@ export const MOUNTAINS = [
 
 const rangeNames = new Map(RANGES.map((r) => [r.slug, r.name]))
 
-/** @param {string} slug */
-export function getRangeName(slug) {
+export function getRangeName(slug: string): string {
   return rangeNames.get(slug) ?? slug
 }
