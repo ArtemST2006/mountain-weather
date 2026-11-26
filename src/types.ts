@@ -60,6 +60,33 @@ export interface MountainFilters {
   category: string
 }
 
+/** Порядок вершин в списке; сортировка идёт без нового запроса. */
+export type SortKey = 'elevation' | 'temperature' | 'wind' | 'name'
+
+/** Фото вершины из Wikipedia REST API. */
+export interface MountainPhoto {
+  /** уменьшенное фото для карточки */
+  thumbnail?: string
+  /** полноразмерное фото для окна вершины */
+  original?: string
+}
+
+/** Один день прогноза на высоте вершины. */
+export interface ForecastDay {
+  /** дата «ГГГГ-ММ-ДД» (местная для вершины) */
+  date: string
+  code: number
+  text: string
+  icon: string
+  /** минимальная и максимальная температура, °C */
+  min: number
+  max: number
+  /** максимальный ветер, км/ч */
+  wind: number
+  /** снег за сутки, см */
+  snow: number
+}
+
 /** Состояние загрузки списка вершин. */
 export type LoadState =
   | { status: 'loading' }

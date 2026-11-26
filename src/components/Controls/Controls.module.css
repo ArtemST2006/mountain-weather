@@ -1,4 +1,4 @@
-.form { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) auto; gap: 12px; align-items: end; }
+.form { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, 1.2fr) auto; gap: 12px; align-items: end; }
 .field { display: grid; gap: 6px; min-width: 0; }
 .fieldLabel { font-size: 0.8rem; font-weight: 600; color: var(--color-muted); }
 .fieldControl { position: relative; display: block; }
@@ -12,6 +12,6 @@
 .buttonIcon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .busy { animation: spin 0.9s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-@media (max-width: 960px) { .form { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .actions { grid-column: 1 / -1; } .actionButton { flex: 1; } }
+@media (max-width: 960px) { .form { grid-template-columns: repeat(3, minmax(0, 1fr)); } .actions { grid-column: 1 / -1; } .actionButton { flex: 1; } }
 @media (max-width: 600px) { .form { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .busy { animation: none; } }

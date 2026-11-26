@@ -1,0 +1,73 @@
+.list {
+  display: grid;
+  gap: 8px;
+}
+
+.day {
+  display: grid;
+  grid-template-columns: 115px minmax(0, 1fr) 82px;
+  gap: 2px 12px;
+  align-items: center;
+  padding: 10px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.date {
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.conditions {
+  min-width: 0;
+}
+
+.temperatures {
+  text-align: right;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.track {
+  position: relative;
+  grid-column: 2 / -1;
+  height: 8px;
+  background: var(--color-border);
+  border-radius: 999px;
+}
+
+.bar {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: inherit;
+}
+
+.extras {
+  grid-column: 2 / -1;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+@media (max-width: 520px) {
+  .day {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .date,
+  .conditions {
+    grid-column: 1;
+  }
+
+  .temperatures {
+    grid-column: 2;
+    grid-row: 1 / 3;
+  }
+
+  .track,
+  .extras {
+    grid-column: 1 / -1;
+  }
+}
