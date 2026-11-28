@@ -10,6 +10,7 @@
  */
 
 import { MOUNTAINS, RANGES, getRangeName } from '../data/mountains.ts'
+import { ApiError, requestJson } from './http.ts'
 import type { Category, Mountain, MountainFilters, MountainWithWeather, SummitWeather } from '../types.ts'
 import { describeWeather } from '../utils/weatherCodes.ts'
 
@@ -17,7 +18,6 @@ const API_URL = 'https://api.open-meteo.com/v1/forecast'
 
 const pageParams = new URLSearchParams(window.location.search)
 const DEBUG_FAIL = pageParams.has('fail')
-const DEBUG_DELAY = Number(pageParams.get('delay')) || 0
 
 /** Поле `current` ответа Open-Meteo — только то, что мы запрашиваем. */
 interface OpenMeteoCurrent {
@@ -35,20 +35,7 @@ interface OpenMeteoLocation {
   current: OpenMeteoCurrent
 }
 
-/** Ошибка, текст которой можно показать пользователю. */
-export class ApiError extends Error {
-  readonly status?: number
-
-  constructor(message: string, status?: number) {
-    super(message)
-    this.name = 'ApiError'
-    this.status = status
-  }
-}
-
-export function isAbortError(error: unknown): boolean {
-  return error instanceof DOMException && error.name === 'AbortError'
-}
+export { ApiError, isAbortError } from './http.ts'
 
 /** Список горных систем для фильтра. */
 export function getCategories(): Category[] {
@@ -75,7 +62,7 @@ export async function fetchMountains(
 
   if (mountains.length === 0) return []
 
-  const data = await request<OpenMeteoLocation | OpenMeteoLocation[]>(buildUrl(mountains), signal)
+  const data = await requestJson<OpenMeteoLocation | OpenMeteoLocation[]>(buildUrl(mountains), signal)
   const locations = Array.isArray(data) ? data : [data]
 
   if (locations.length !== mountains.length) {
@@ -103,33 +90,6 @@ function buildUrl(mountains: Mountain[]): URL {
   return url
 }
 
-/**
- * GET-запрос с проверкой response.ok.
- * fetch не отклоняет промис при 400/500 — поэтому статус проверяем сами.
- */
-async function request<T>(url: URL, signal?: AbortSignal): Promise<T> {
-  let response: Response
-  try {
-    if (DEBUG_DELAY) await sleep(DEBUG_DELAY, signal)
-    response = await fetch(url, { signal })
-  } catch (error) {
-    if (isAbortError(error)) throw error
-    throw new ApiError('Не удалось связаться с сервером погоды. Проверьте подключение к интернету.')
-  }
-
-  if (!response.ok) {
-    const reason = response.status >= 500 ? 'ошибка на стороне сервера' : 'запрос отклонён'
-    throw new ApiError(`Сервер погоды вернул ${response.status}: ${reason}.`, response.status)
-  }
-
-  try {
-    return (await response.json()) as T
-  } catch (error) {
-    if (isAbortError(error)) throw error
-    throw new ApiError('Сервер погоды прислал некорректные данные.')
-  }
-}
-
 function toSummitWeather(current: OpenMeteoCurrent): SummitWeather {
   const isDay = current.is_day === 1
   return {
@@ -143,19 +103,4 @@ function toSummitWeather(current: OpenMeteoCurrent): SummitWeather {
     localTime: current.time.slice(11, 16),
     ...describeWeather(current.weather_code, isDay),
   }
-}
-
-/** Пауза, которую можно прервать через AbortSignal. */
-function sleep(ms: number, signal?: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(resolve, ms)
-    signal?.addEventListener(
-      'abort',
-      () => {
-        clearTimeout(timer)
-        reject(new DOMException('Aborted', 'AbortError'))
-      },
-      { once: true },
-    )
-  })
 }

@@ -1,20 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import type { Category } from '../../types.ts'
+import type { Category, SortKey } from '../../types.ts'
+import { SORT_OPTIONS, isSortKey } from '../../utils/sort.ts'
 import { Button } from '../Button/Button.tsx'
 import styles from './Controls.module.css'
 
 export interface ControlsProps {
   categories: Category[]
   category: string
+  sort: SortKey
   isBusy: boolean
   onSearch: (query: string) => void
   onCategoryChange: (slug: string) => void
+  onSortChange: (sort: SortKey) => void
   onRefresh: () => void
   onReset: () => void
 }
 
-export function Controls({ categories, category, isBusy, onSearch, onCategoryChange, onRefresh, onReset }: ControlsProps) {
+export function Controls({ categories, category, sort, isBusy, onSearch, onCategoryChange, onSortChange, onRefresh, onReset }: ControlsProps) {
   const [query, setQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -70,6 +73,15 @@ export function Controls({ categories, category, isBusy, onSearch, onCategoryCha
         </span>
       </label>
       <label className={styles.field}>
+        <span className={styles.fieldLabel}>Сортировка</span>
+        <span className={styles.fieldControl}>
+          <select className={[styles.input, styles.select].join(' ')} name="sort" value={sort}
+            onChange={(event) => { if (isSortKey(event.target.value)) onSortChange(event.target.value) }}>
+            {SORT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
+        </span>
+      </label>
+      <label className={styles.field}>
         <span className={styles.fieldLabel}>Горная система</span>
         <span className={styles.fieldControl}>
           <select className={[styles.input, styles.select].join(' ')} name="range" value={category}
@@ -86,7 +98,7 @@ export function Controls({ categories, category, isBusy, onSearch, onCategoryCha
           </svg>
           Обновить
         </Button>
-        {(query.trim() || category) && <Button className={styles.actionButton} variant="ghost" onClick={handleReset}>Сбросить</Button>}
+        {(query.trim() || category || sort !== 'elevation') &&<Button className={styles.actionButton} variant="ghost" onClick={handleReset}>Сбросить</Button>}
       </div>
     </form>
   )

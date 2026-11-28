@@ -1,4 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import type { KeyboardEvent } from 'react'
+import { useMountainPhoto } from '../../hooks/useMountainPhoto.ts'
 import type { MountainWithWeather } from '../../types.ts'
 import { formatNumber, formatTemp } from '../../utils/format.ts'
 import { ridgePaths } from '../../utils/ridge.ts'
@@ -7,6 +9,8 @@ import styles from './MountainCard.module.css'
 
 interface MountainCardProps {
   mountain: MountainWithWeather
+  /** клик или Enter/пробел по карточке — открыть окно вершины */
+  onSelect: (mountain: MountainWithWeather) => void
 }
 
 interface StatProps {
@@ -24,20 +28,47 @@ function Stat({ term, value, hint }: StatProps) {
   )
 }
 
-export function MountainCard({ mountain }: MountainCardProps) {
+export function MountainCard({ mountain, onSelect }: MountainCardProps) {
   const { weather } = mountain
+  const photo = useMountainPhoto(mountain.wiki)
+  const [photoFailed, setPhotoFailed] = useState(false)
+  // Фото нет или не загрузилось — остаётся нарисованный силуэт
+  const photoUrl = photoFailed ? undefined : photo?.thumbnail
   const ridge = useMemo(() => ridgePaths(mountain.id, mountain.elevation), [mountain.id, mountain.elevation])
-  const mediaClass = [styles.media, styles[skyType(weather.code)], !weather.isDay && styles.night].filter(Boolean).join(' ')
+  const mediaClass = [styles.media, styles[skyType(weather.code)], !weather.isDay && styles.night, photoUrl && styles.withPhoto].filter(Boolean).join(' ')
   const tempClass = [styles.temp, styles[tempTone(weather.temperature)]].filter(Boolean).join(' ')
 
+  const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) return
+    event.preventDefault()
+    onSelect(mountain)
+  }
+
   return (
-    <article className={styles.card} data-id={mountain.id}>
+    <article
+      className={styles.card}
+      data-id={mountain.id}
+      role="button"
+      tabIndex={0}
+      aria-label={`Подробнее о вершине ${mountain.name}`}
+      onClick={() => onSelect(mountain)}
+      onKeyDown={handleKeyDown}
+    >
       <div className={mediaClass}>
         <svg className={styles.ridge} viewBox="0 0 300 140" preserveAspectRatio="none" aria-hidden="true">
           <path className={styles.ridgeBack} d={ridge.back} />
           <path className={styles.ridgeFront} d={ridge.front} />
           <path className={styles.ridgeSnow} d={ridge.snow} />
         </svg>
+        {photoUrl && (
+          <img
+            className={styles.photo}
+            src={photoUrl}
+            alt={`Вершина ${mountain.name}`}
+            loading="lazy"
+            onError={() => setPhotoFailed(true)}
+          />
+        )}
         <span className={styles.chip}>{mountain.rangeName}</span>
         <span className={styles.elevation}>{formatNumber(mountain.elevation)} м</span>
         <span className={styles.weatherIcon} aria-hidden="true">{weather.icon}</span>
